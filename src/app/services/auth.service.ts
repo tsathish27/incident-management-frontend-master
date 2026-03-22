@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 interface AuthResponse {
   token: string;
@@ -15,7 +16,7 @@ interface AuthResponse {
 })
 export class AuthService {
   // DEMO ⚠️: Hardcoded URL — Copilot will suggest environment.apiUrl
-  private apiUrl = 'http://localhost:8080/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   private authTokenKey = 'jwt_token';
   private userRoleKey = 'user_role';
 
