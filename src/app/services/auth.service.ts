@@ -14,7 +14,7 @@ interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/auth'; // Your Spring Boot auth API URL
+  private apiUrl = 'http://localhost:8080/auth';
   private authTokenKey = 'jwt_token';
   private userRoleKey = 'user_role';
 
@@ -27,26 +27,26 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) { }
 
   private hasToken(): boolean {
-    return !!localStorage.getItem(this.authTokenKey);
+    return !!sessionStorage.getItem(this.authTokenKey);
   }
 
   private getRoleFromStorage(): string | null {
-    return localStorage.getItem(this.userRoleKey);
+    return sessionStorage.getItem(this.userRoleKey);
   }
 
   login(credentials: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        localStorage.setItem(this.authTokenKey, response.token);
-        localStorage.setItem(this.userRoleKey, response.role);
+        sessionStorage.setItem(this.authTokenKey, response.token);
+        sessionStorage.setItem(this.userRoleKey, response.role);
+
         this.isAuthenticatedSubject.next(true);
         this.currentUserRoleSubject.next(response.role);
         this.redirectToDashboard(response.role);
       }),
       catchError(error => {
         console.error('Login failed:', error);
-        // You might want to show a more user-friendly error message here
-        throw error; // Re-throw to be handled by the component
+        throw error;
       })
     );
   }
@@ -55,23 +55,22 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/register`, userData).pipe(
       catchError(error => {
         console.error('Registration failed:', error);
-        // You might want to show a more user-friendly error message here
         throw error;
       })
     );
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.authTokenKey);
+    return sessionStorage.getItem(this.authTokenKey);
   }
 
   getUserRole(): string | null {
-    return localStorage.getItem(this.userRoleKey);
+    return sessionStorage.getItem(this.userRoleKey);
   }
 
   logout(): void {
-    localStorage.removeItem(this.authTokenKey);
-    localStorage.removeItem(this.userRoleKey);
+    sessionStorage.removeItem(this.authTokenKey);
+    sessionStorage.removeItem(this.userRoleKey);
     this.isAuthenticatedSubject.next(false);
     this.currentUserRoleSubject.next(null);
     this.router.navigate(['/login']);

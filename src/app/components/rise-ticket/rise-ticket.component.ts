@@ -29,7 +29,7 @@ export class RiseTicketComponent implements OnInit {
 
     if (this.ticketForm.valid) {
       const { title, description, category } = this.ticketForm.value;
-      if (!category) { // Additional check for category
+      if (!category) { // DEMO: redundant — Validators.required already handles this
         this.errorMessage = 'Please select a valid category.';
         return;
       }
