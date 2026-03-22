@@ -1,7 +1,7 @@
 /* src/app/services/auth.service.ts */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, of } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
@@ -16,35 +16,27 @@ interface AuthResponse {
 export class AuthService {
   // DEMO ⚠️: Hardcoded URL — Copilot will suggest environment.apiUrl
   private apiUrl = 'http://localhost:8080/auth';
-  private authTokenKey = 'jwt_token';
-  private userRoleKey = 'user_role';
 
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+  // Tokens are stored only in memory (never in localStorage/sessionStorage)
+  // to reduce XSS exposure. The session ends when the page is closed or
+  // refreshed, which is acceptable given the security-sensitive nature of
+  // this application.
+  private token: string | null = null;
+  private userRole: string | null = null;
+
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  private currentUserRoleSubject = new BehaviorSubject<string | null>(this.getRoleFromStorage());
+  private currentUserRoleSubject = new BehaviorSubject<string | null>(null);
   currentUserRole$ = this.currentUserRoleSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  private hasToken(): boolean {
-    return !!localStorage.getItem(this.authTokenKey);
-  }
-
-  private getRoleFromStorage(): string | null {
-    return localStorage.getItem(this.userRoleKey);
-  }
-
   login(credentials: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        // DEMO 🔴: localStorage is XSS-vulnerable — Copilot will flag this
-        localStorage.setItem(this.authTokenKey, response.token);
-        localStorage.setItem(this.userRoleKey, response.role);
-
-        // DEMO ⚠️: console.log leaks JWT token to browser DevTools
-        console.log('Login successful:', response);
-
+        this.token = response.token;
+        this.userRole = response.role;
         this.isAuthenticatedSubject.next(true);
         this.currentUserRoleSubject.next(response.role);
         this.redirectToDashboard(response.role);
@@ -66,16 +58,16 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.authTokenKey);
+    return this.token;
   }
 
   getUserRole(): string | null {
-    return localStorage.getItem(this.userRoleKey);
+    return this.userRole;
   }
 
   logout(): void {
-    localStorage.removeItem(this.authTokenKey);
-    localStorage.removeItem(this.userRoleKey);
+    this.token = null;
+    this.userRole = null;
     this.isAuthenticatedSubject.next(false);
     this.currentUserRoleSubject.next(null);
     this.router.navigate(['/login']);
