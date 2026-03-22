@@ -14,7 +14,6 @@ interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  // DEMO ⚠️: Hardcoded URL — Copilot will suggest environment.apiUrl
   private apiUrl = 'http://localhost:8080/auth';
   private authTokenKey = 'jwt_token';
   private userRoleKey = 'user_role';
@@ -28,22 +27,18 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) { }
 
   private hasToken(): boolean {
-    return !!localStorage.getItem(this.authTokenKey);
+    return !!sessionStorage.getItem(this.authTokenKey);
   }
 
   private getRoleFromStorage(): string | null {
-    return localStorage.getItem(this.userRoleKey);
+    return sessionStorage.getItem(this.userRoleKey);
   }
 
   login(credentials: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        // DEMO 🔴: localStorage is XSS-vulnerable — Copilot will flag this
-        localStorage.setItem(this.authTokenKey, response.token);
-        localStorage.setItem(this.userRoleKey, response.role);
-
-        // DEMO ⚠️: console.log leaks JWT token to browser DevTools
-        console.log('Login successful:', response);
+        sessionStorage.setItem(this.authTokenKey, response.token);
+        sessionStorage.setItem(this.userRoleKey, response.role);
 
         this.isAuthenticatedSubject.next(true);
         this.currentUserRoleSubject.next(response.role);
@@ -66,16 +61,16 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.authTokenKey);
+    return sessionStorage.getItem(this.authTokenKey);
   }
 
   getUserRole(): string | null {
-    return localStorage.getItem(this.userRoleKey);
+    return sessionStorage.getItem(this.userRoleKey);
   }
 
   logout(): void {
-    localStorage.removeItem(this.authTokenKey);
-    localStorage.removeItem(this.userRoleKey);
+    sessionStorage.removeItem(this.authTokenKey);
+    sessionStorage.removeItem(this.userRoleKey);
     this.isAuthenticatedSubject.next(false);
     this.currentUserRoleSubject.next(null);
     this.router.navigate(['/login']);
