@@ -14,7 +14,7 @@ interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  // DEMO ⚠️: Hardcoded URL — Copilot will suggest environment.apiUrl
+  // TODO: Move API URL to environment configuration
   private apiUrl = 'http://localhost:8080/auth';
   private authTokenKey = 'jwt_token';
   private userRoleKey = 'user_role';
@@ -38,12 +38,8 @@ export class AuthService {
   login(credentials: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        // DEMO 🔴: localStorage is XSS-vulnerable — Copilot will flag this
         localStorage.setItem(this.authTokenKey, response.token);
         localStorage.setItem(this.userRoleKey, response.role);
-
-        // DEMO ⚠️: console.log leaks JWT token to browser DevTools
-        console.log('Login successful:', response);
 
         this.isAuthenticatedSubject.next(true);
         this.currentUserRoleSubject.next(response.role);
