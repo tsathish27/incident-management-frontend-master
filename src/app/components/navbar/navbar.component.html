@@ -1,0 +1,32 @@
+<!-- // src/app/components/navbar/navbar.component.html -->
+<nav class="bg-indigo-700 p-4 shadow-lg sticky top-0 z-50 rounded-b-lg">
+  <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+    <div class="text-white text-2xl font-bold mb-4 sm:mb-0">
+      Incident Management
+    </div>
+    <div class="flex flex-wrap justify-center sm:justify-end gap-4">
+      <ng-container *ngFor="let link of navLinks">
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="bg-indigo-800 text-white shadow-inner"
+          [routerLinkActiveOptions]="{exact: true}"
+          class="flex items-center space-x-2 px-4 py-2 rounded-md text-indigo-100 hover:bg-indigo-600 transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="link.icon"></path>
+          </svg>
+          <span class="font-medium">{{ link.label }}</span>
+        </a>
+      </ng-container>
+      <button
+        (click)="logout()"
+        class="flex items-center space-x-2 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition duration-300 ease-in-out transform hover:scale-105"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a3 3 0 01-3-3V7a3 3 0 013-3h5a3 3 0 013 3v1"></path>
+        </svg>
+        <span class="font-medium">Logout</span>
+      </button>
+    </div>
+  </div>
+</nav>

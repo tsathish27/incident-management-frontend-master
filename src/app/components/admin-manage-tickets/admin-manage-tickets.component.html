@@ -1,0 +1,84 @@
+<div class="container mx-auto px-4 py-8">
+    <h2 class="text-3xl font-extrabold text-gray-800 mb-8 text-center">Manage All Tickets (Admin)</h2>
+  
+    <div *ngIf="loadingIncidents || loadingAgents" class="text-center text-gray-600">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
+      Loading tickets and agents...
+    </div>
+  
+    <div *ngIf="errorMessage" class="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md mb-4" role="alert">
+      {{ errorMessage }}
+    </div>
+  
+    <div *ngIf="successMessage" class="p-4 bg-green-100 border border-green-400 text-green-700 rounded-md mb-4" role="alert">
+      {{ successMessage }}
+    </div>
+  
+    <div *ngIf="!loadingIncidents && allIncidents.length === 0" class="text-center text-gray-500 p-8 bg-white rounded-lg shadow-md">
+      <p class="text-xl font-semibold">No incidents found in the system.</p>
+    </div>
+  
+    <div *ngIf="!loadingIncidents && allIncidents.length > 0" class="overflow-x-auto bg-white rounded-lg shadow-lg">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SLA Deadline</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escalated</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reassign</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let incident of allIncidents" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ incident.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ incident.title }}</td>
+            <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{{ incident.description }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-800': incident.status === 'OPEN',
+                  'bg-green-100 text-green-800': incident.status === 'RESOLVED',
+                  'bg-blue-100 text-blue-800': incident.status === 'IN_PROGRESS'
+                }"
+              >
+                {{ incident.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ incident.createdBy.username }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ incident.assignedTo.username }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(incident.createdAt) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(incident.slaDeadline) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                [ngClass]="{
+                  'bg-red-100 text-red-800': incident.escalated,
+                  'bg-gray-100 text-gray-800': !incident.escalated
+                }"
+              >
+                {{ incident.escalated ? 'Yes' : 'No' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <select
+                (change)="onAssignAgent(incident.id, $event)"
+                [ngModel]="incident.assignedTo.username"
+                class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              >
+                <option value="" disabled>Select Agent</option>
+                <option *ngFor="let agent of agents" [value]="agent.username">{{ agent.username }}</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
